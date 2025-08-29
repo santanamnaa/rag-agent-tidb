@@ -2,6 +2,21 @@
 
 This project is a minimal Retrieval-Augmented Generation (RAG) agent that stores document chunks and 1024‑dim embeddings in TiDB Cloud (`VECTOR(1024)`), retrieves the most relevant chunks via cosine similarity, and prompts a local LLM (DeepSeek via Ollama) to answer user questions grounded in your data. It includes scripts to initialize the schema, ingest a CSV knowledge base, and run a chat query end‑to‑end.
 
+## Architecture
+
+```mermaid
+graph TD
+  U["User (Browser)"] --> F["React Frontend (Vite)"]
+  F -->|POST /chat| A["FastAPI (scripts/api.py)"]
+  A -->|ensure_session / add_message| M1["TiDB: chat_sessions & chat_messages"]
+  A -->|embed_text| E["Sentence-Transformers (BAAI/bge-m3)"]
+  A -->|search_top_k| D["TiDB: documents (VECTOR(1024))"]
+  A -->|prompt| L["Ollama (DeepSeek)"]
+  A -->|/metrics| P["Prometheus Scraper"]
+  A -->|errors| S["Sentry"]
+  A --> F
+```
+
 ## Prerequisites
 
 - Python 3.9+
