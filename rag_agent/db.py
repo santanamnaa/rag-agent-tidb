@@ -48,3 +48,9 @@ def fetchone(conn: MySQLConnection, sql: str, params: Optional[Sequence[Any]] = 
 		cur.execute(sql, params or [])
 		row = cur.fetchone()
 	return row
+
+
+def executemany(conn: MySQLConnection, sql: str, seq_of_params: Sequence[Sequence[Any]]) -> None:
+	with conn.cursor() as cur:
+		cur.executemany(sql, seq_of_params)
+	conn.commit()

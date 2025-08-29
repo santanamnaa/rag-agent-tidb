@@ -48,10 +48,40 @@ Ensure the model is downloaded and responsive, then Ctrl+C to exit:
 ollama run deepseek-llm:latest
 ```
 
-## Ask a question
+## Ask a question (CLI)
+
+````bash
+python scripts/chat.py "Apa itu TiDB Cloud?"
+
+## Run API server (FastAPI)
 
 ```bash
-python scripts/chat.py "Apa itu TiDB Cloud?"
+uvicorn scripts.api:app --host 0.0.0.0 --port 8000 --reload
+````
+
+Environment:
+
+- `ALLOWED_ORIGINS`: comma-separated origins for CORS. Default: `http://localhost:5173,http://127.0.0.1:5173`.
+
+Endpoints:
+
+- `GET /health` → `{ "status": "ok" }`
+- `POST /chat` → body `{ "query": string, "k"?: number }` returns `{ answer, sources }`
+
+## Run Frontend (Vite + React)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app expects the API at `http://localhost:8000`. To change, set `VITE_API_BASE` in `frontend/.env`:
+
+```env
+VITE_API_BASE=http://localhost:8000
+```
+
 ```
 
 ## Notes
@@ -59,3 +89,4 @@ python scripts/chat.py "Apa itu TiDB Cloud?"
 - Embeddings use `BAAI/bge-m3` with 1024 dims; TiDB column is `VECTOR(1024)`.
 - Retrieval orders by cosine distance using `VEC_COSINE_DISTANCE`.
 - If your TiDB version supports vector indexes, uncomment the index DDL in `rag_agent/schema.py`.
+```

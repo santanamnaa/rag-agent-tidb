@@ -9,6 +9,12 @@ description = "RAG chatbot using TiDB Cloud VECTOR and DeepSeek via Ollama"
 requires-python = ">=3.9"
 authors = [{ name = "Your Name" }]
 readme = "README.md"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+  "requests>=2.31.0",
+  "prometheus-client>=0.20.0",
+]
 
 [project.optional-dependencies]
 # keep torch optional to allow CPU-only installs
