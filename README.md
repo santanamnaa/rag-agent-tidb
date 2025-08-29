@@ -50,23 +50,34 @@ ollama run deepseek-llm:latest
 
 ## Ask a question (CLI)
 
-````bash
+```bash
 python scripts/chat.py "Apa itu TiDB Cloud?"
+```
 
 ## Run API server (FastAPI)
 
 ```bash
 uvicorn scripts.api:app --host 0.0.0.0 --port 8000 --reload
-````
+```
 
 Environment:
 
 - `ALLOWED_ORIGINS`: comma-separated origins for CORS. Default: `http://localhost:5173,http://127.0.0.1:5173`.
+- `SENTRY_DSN`: optional; enable error reporting if set.
 
 Endpoints:
 
 - `GET /health` → `{ "status": "ok" }`
-- `POST /chat` → body `{ "query": string, "k"?: number }` returns `{ answer, sources }`
+- `GET /metrics` → Prometheus exposition format
+- `POST /chat` → body `{ "query": string, "k"?: number, "session_id"?: string }` returns `{ answer, sources }`
+
+Example:
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"Apa itu TiDB Cloud?","k":5,"session_id":"abc123"}'
+```
 
 ## Run Frontend (Vite + React)
 
@@ -76,17 +87,31 @@ npm install
 npm run dev
 ```
 
-The app expects the API at `http://localhost:8000`. To change, set `VITE_API_BASE` in `frontend/.env`:
+- API base defaults to `http://localhost:8000`. Override via `frontend/.env`:
 
 ```env
 VITE_API_BASE=http://localhost:8000
 ```
 
+- The UI persists a `session_id` in `localStorage` to enable multi-turn memory using TiDB tables `chat_sessions` and `chat_messages`.
+
+## Docker
+
+Build and run with Compose:
+
+```bash
+docker compose up --build
 ```
+
+Images/targets:
+
+- API: multi-stage `Dockerfile` target `api` (exposes 8000)
+- Frontend: `frontend` (Nginx serving built assets on 5173 via compose)
+
+Compose uses environment variables for TiDB connection and optional `SENTRY_DSN`.
 
 ## Notes
 
 - Embeddings use `BAAI/bge-m3` with 1024 dims; TiDB column is `VECTOR(1024)`.
 - Retrieval orders by cosine distance using `VEC_COSINE_DISTANCE`.
 - If your TiDB version supports vector indexes, uncomment the index DDL in `rag_agent/schema.py`.
-```
